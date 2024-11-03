@@ -1,0 +1,36 @@
+services:  
+  redis1:
+    image: redis:7.2.2
+    networks:
+      - net1 
+  web-server:
+    image: "node:20"
+    ports:
+      - "3000:3000"
+    volumes:
+      - "./producer:/producer"
+    working_dir: "/producer"
+    command: "npm start --debug=0.0.0.0:9229"
+    environment:
+      REDIS_URL: "redis://redis1:6379"
+    networks:
+      - net1 
+    
+  worker:
+    image: "node:20"
+    volumes:
+      - "./consumer:/consumer"
+    working_dir: "/consumer"
+    command: "npm start --debug=0.0.0.0:9230"
+    environment:
+      REDIS_URL: "redis://redis1:6379"
+    networks:
+      - net1 
+    deploy:
+      mode: replicated
+      replicas: 2
+    restart: on-failure
+
+
+networks:
+  net1:
