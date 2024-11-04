@@ -3,6 +3,7 @@ services:
     image: redis:7.2.2
     networks:
       - net1 
+      
   web-server:
     image: "node:20"
     ports:
@@ -10,9 +11,12 @@ services:
     volumes:
       - "./producer:/producer"
     working_dir: "/producer"
-    command: "npm start --debug=0.0.0.0:9229"
+    command: "npm start"
     environment:
       REDIS_URL: "redis://redis1:6379"
+      # MESSAGE_BROKER_PROVIDER: "ZMQ_MESSAGE_BROKER"
+      ZMQ_SERVER_PUSH_URL: "tcp://proxy-zmq:10002"
+      ZMQ_SERVER_SUBSCRIBE_URL:  "tcp://proxy-zmq:10001"
     networks:
       - net1 
     
@@ -21,7 +25,7 @@ services:
     volumes:
       - "./consumer:/consumer"
     working_dir: "/consumer"
-    command: "npm start --debug=0.0.0.0:9230"
+    command: "npm start"
     environment:
       REDIS_URL: "redis://redis1:6379"
     networks:
@@ -29,7 +33,38 @@ services:
     deploy:
       mode: replicated
       replicas: 2
-    restart: on-failure
+    # restart: on-failure
+    
+  proxy-zmq:
+    image: "node:20"
+    volumes:
+      - "./proxy-0mq:/proxy-0mq"
+    working_dir: "/proxy-0mq"
+    command: "npm start"
+    environment:
+      ZMQ_WORKER_PULL_URL: "tcp://0.0.0.0:20002"
+      ZMQ_WORKER_PUSH_URL: "tcp://0.0.0.0:20001"
+      ZMQ_SERVER_PULL_URL: "tcp://0.0.0.0:10002"
+      ZMQ_SERVER_PUBLISH_URL: "tcp://0.0.0.0:10001"
+    networks:
+      - net1 
+    
+    
+  worker-zmq:
+    image: "node:20"
+    volumes:
+      - "./consumer-0mq:/consumer-0mq"
+    working_dir: "/consumer-0mq"
+    command: "npm start"
+    environment:
+      ZMQ_PULL_URL: "tcp://proxy-zmq:20001"
+      ZMQ_PUSH_URL: "tcp://proxy-zmq:20002"
+    networks:
+      - net1 
+    deploy:
+      mode: replicated
+      replicas: 2
+    # restart: on-failure
 
 
 networks:

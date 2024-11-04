@@ -2,9 +2,9 @@ import {Pull, Push, Publisher} from "zeromq";
 import {env} from 'process';
 
 const zmqWorkerPullUrl = env.ZMQ_WORKER_PULL_URL || "tcp://localhost:20002";
-const zmqWorkerPushUrl = env.ZMQ_WORKER_PULL_URL || "tcp://localhost:20001";
+const zmqWorkerPushUrl = env.ZMQ_WORKER_PUSH_URL || "tcp://localhost:20001";
 const zmqServerPullUrl = env.ZMQ_SERVER_PULL_URL || "tcp://localhost:10002";
-const zmqServerPublishUrl = env.ZMQ_SERVER_PULL_URL || "tcp://localhost:10001";
+const zmqServerPublishUrl = env.ZMQ_SERVER_PUBLISH_URL || "tcp://localhost:10001";
 
 async function start() {
     const workerPullSocket = new Pull();

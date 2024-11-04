@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ZeromqService } from './zeromq.service';
+import {zeromqProviders} from "./zeromq.providers";
 
 @Module({
-  providers: [ZeromqService],
-  exports: [ZeromqService]
+  providers: [...zeromqProviders],
+  exports: [...zeromqProviders]
 })
 export class ZeromqModule {}

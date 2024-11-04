@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import {RedisService} from "../redis/redis.service";
-import {ZeromqService} from "../zeromq/zeromq.service";
+import {Inject, Injectable} from '@nestjs/common';
+import {MessageBrokerInterface} from "../message.broker.interface";
+import con from '../constants';
 
 @Injectable()
 export class UserService {
-    constructor(private readonly redisService: ZeromqService) {
+    constructor(
+        @Inject(con.MESSAGE_BROKER_PROVIDER)
+        private readonly userBroker: MessageBrokerInterface
+    ) {
     }
 
     async getUserData(id: number) {
-        return this.redisService.getUserData(id);
+        return this.userBroker.getUserData(id);
     }
 }

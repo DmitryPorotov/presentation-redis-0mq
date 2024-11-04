@@ -1,34 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import {Push, Subscriber} from "zeromq";
-import {env} from "process";
 import {randomUUID} from "crypto";
+import {MessageBrokerInterface} from "../message.broker.interface";
+import con from '../constants';
 
-const zmqServerPushUrl = env.ZMQ_SERVER_PULL_URL || "tcp://localhost:10002";
-const zmqServerSubscribeUrl = env.ZMQ_SERVER_PULL_URL || "tcp://localhost:10001";
 
 @Injectable()
-export class ZeromqService {
+export class ZeromqService implements MessageBrokerInterface{
     private isInit: boolean = false;
     private subscriber;
     private queueClient;
     private outstandingMessages: Map<string, {resolve: (val: any) => void, reject: (val: any) => void}> = new Map();
-    async init(): Promise<void> {
+    private async init(): Promise<void> {
         if (this.isInit) return ;
         this.isInit = true;
         this.subscriber = new Subscriber();
-        await this.subscriber.connect(zmqServerSubscribeUrl);
+        await this.subscriber.connect(con.ZMQ_SERVER_SUBSCRIBE_URL);
         this.subscriber.subscribe("server1");
 
         this.queueClient = new Push();
-        await this.queueClient.connect(zmqServerPushUrl);
+        await this.queueClient.connect(con.ZMQ_SERVER_PUSH_URL);
 
         for await (const [topic, msg] of this.subscriber) {
-            console.log(
-                "received a message related to:",
-                topic,
-                "containing message:",
-                msg,
-            );
             const data = JSON.parse(msg);
             const uuid = data.uuid;
             const {resolve, reject} = this.outstandingMessages.get(uuid);

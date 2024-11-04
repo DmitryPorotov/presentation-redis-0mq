@@ -1,21 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import {createClient} from 'redis';
 import {randomUUID} from "crypto";
-import { env } from "process";
-
-const redisUrl = env.REDIS_URL || "redis://localhost:6379";
+import con from '../constants';
+import {MessageBrokerInterface} from "../message.broker.interface";
 
 @Injectable()
-export class RedisService {
+export class RedisService implements MessageBrokerInterface{
     private isInit: boolean = false;
     private subscriber;
     private queueClient;
     private outstandingMessages: Map<string, {resolve: (val: any) => void, reject: (val: any) => void}> = new Map();
-    async init(): Promise<void> {
+    private async init(): Promise<void> {
         if (this.isInit) return ;
         this.isInit = true;
         this.subscriber = createClient({
-            url: redisUrl
+            url: con.REDIS_URL
         });
         this.subscriber.on('error', (err) => console.error('Redis Sub Client Error', err));
         await this.subscriber.connect();
@@ -23,7 +22,7 @@ export class RedisService {
         await this.subscriber.pSubscribe(['server1'], this.onMessageFromWorker);
 
         this.queueClient = createClient({
-            url: redisUrl
+            url: con.REDIS_URL
         });
         this.queueClient.on('error', (err) => console.error('Redis List Client Error', err));
         await this.queueClient.connect();
