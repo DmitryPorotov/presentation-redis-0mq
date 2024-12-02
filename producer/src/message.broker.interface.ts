@@ -1,3 +1,3 @@
 export interface MessageBrokerInterface {
-    getUserData(id: number): Promise<any>
+  getUserData(id: number): Promise<any>;
 }

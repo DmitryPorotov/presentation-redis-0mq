@@ -48,7 +48,6 @@ export class RedisService implements MessageBrokerInterface {
   };
 
   async getUserData(id: number): Promise<object> {
-    // await this.init();
     return new Promise(async (resolve, reject) => {
       const msg = {
         id,
